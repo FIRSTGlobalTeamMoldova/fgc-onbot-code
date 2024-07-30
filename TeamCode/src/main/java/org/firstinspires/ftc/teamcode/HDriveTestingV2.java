@@ -7,14 +7,15 @@ import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name = "HDrive Test v1")
-public class HDriveTestingV1 extends LinearOpMode {
+public class HDriveTestingV2 extends LinearOpMode {
 
     private GamepadEx driverGamepad = null;
-    private ToggleButtonReader hDriveToggle = null;
 
     private ServoEx leftServo = null;
     private ServoEx rightServo = null;
@@ -53,18 +54,19 @@ public class HDriveTestingV1 extends LinearOpMode {
         leftServo = new SimpleServo(hardwareMap, "left servo", 0, 180);
         rightServo = new SimpleServo(hardwareMap, "right servo", 0, 180);
 
-        hDriveToggle = new ToggleButtonReader(driverGamepad, GamepadKeys.Button.LEFT_BUMPER);
-
         hDrive = new Motor(hardwareMap, "h drive");
         hDrive.setInverted(false);
     }
 
     private void runHDrive() {
         driveBase.arcadeDrive(driverGamepad.getLeftY(),
-                            driverGamepad.getRightX());
+                driverGamepad.getRightX());
 
-        if (hDriveToggle.getState()) {
-            hDrive.set(driverGamepad.getLeftX());
+        double joystickDeadZoneX = 0.2;
+        double gamepadLeftX = driverGamepad.getLeftX();
+
+        if (Math.abs(gamepadLeftX) >= joystickDeadZoneX) {
+            hDrive.set(gamepadLeftX);
 
             leftServo.setPosition(0);
             rightServo.setPosition(0);
