@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "HDrive Test v1")
+@TeleOp(name = "HDrive Test v2")
 public class HDriveTestingV2 extends LinearOpMode {
 
     private GamepadEx driverGamepad = null;
@@ -54,8 +54,11 @@ public class HDriveTestingV2 extends LinearOpMode {
         leftServo = new SimpleServo(hardwareMap, "left servo", 0, 180);
         rightServo = new SimpleServo(hardwareMap, "right servo", 0, 180);
 
+        leftServo.setPosition(0);
+        rightServo.setPosition(0);
+
         hDrive = new Motor(hardwareMap, "h drive");
-        hDrive.setInverted(false);
+        hDrive.setInverted(true);
     }
 
     private void runHDrive() {
@@ -66,15 +69,17 @@ public class HDriveTestingV2 extends LinearOpMode {
         double gamepadLeftX = driverGamepad.getLeftX();
 
         if (Math.abs(gamepadLeftX) >= joystickDeadZoneX) {
-            hDrive.set(gamepadLeftX);
-
-            leftServo.setPosition(0);
-            rightServo.setPosition(0);
-        } else {
-            hDrive.stopMotor();
-
             leftServo.setPosition(1);
             rightServo.setPosition(1);
+        } else {
+            leftServo.setPosition(0);
+            rightServo.setPosition(0);
+        }
+
+        if (leftServo.getPosition() == 1 || rightServo.getPosition() == 1) {
+            hDrive.set(gamepadLeftX);
+        } else {
+            hDrive.stopMotor();
         }
     }
 }

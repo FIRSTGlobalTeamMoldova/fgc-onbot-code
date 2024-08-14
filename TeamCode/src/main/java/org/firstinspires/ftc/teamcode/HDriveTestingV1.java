@@ -53,26 +53,30 @@ public class HDriveTestingV1 extends LinearOpMode {
         leftServo = new SimpleServo(hardwareMap, "left servo", 0, 180);
         rightServo = new SimpleServo(hardwareMap, "right servo", 0, 180);
 
-        hDriveToggle = new ToggleButtonReader(driverGamepad, GamepadKeys.Button.LEFT_BUMPER);
+        leftServo.setPosition(0);
+        rightServo.setPosition(0);
+
+        hDriveToggle = new ToggleButtonReader(driverGamepad, GamepadKeys.Button.A);
 
         hDrive = new Motor(hardwareMap, "h drive");
-        hDrive.setInverted(false);
+        hDrive.setInverted(true);
     }
 
     private void runHDrive() {
         driveBase.arcadeDrive(driverGamepad.getLeftY(),
                             driverGamepad.getRightX());
 
+        hDriveToggle.readValue();
         if (hDriveToggle.getState()) {
             hDrive.set(driverGamepad.getLeftX());
 
-            leftServo.setPosition(0);
-            rightServo.setPosition(0);
+            leftServo.setPosition(1);
+            rightServo.setPosition(1);
         } else {
             hDrive.stopMotor();
 
-            leftServo.setPosition(1);
-            rightServo.setPosition(1);
+            leftServo.setPosition(0);
+            rightServo.setPosition(0);
         }
     }
 }
