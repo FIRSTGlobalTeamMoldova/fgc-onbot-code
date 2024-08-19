@@ -72,6 +72,7 @@ public class CloseAlignmentTest extends LinearOpMode {
                 telemetry.addData("April Tag Position X", detection.ftcPose.x);
                 telemetry.addData("April Tag Position Y", detection.ftcPose.y);
                 telemetry.addData("April Tag Rotation Yaw", detection.ftcPose.yaw * 180 / Math.PI);
+                telemetry.addData("April Tag Rotation Pitch", detection.ftcPose.pitch * 180 / Math.PI);
 
                 // Rotate offset to match april tag angle
                 double alfa = 1.57 - Math.abs(detection.ftcPose.yaw);
@@ -82,8 +83,8 @@ public class CloseAlignmentTest extends LinearOpMode {
                 telemetry.addData("Offset X", adjustedOffset.getX());
                 telemetry.addData("Offset Y", adjustedOffset.getY());
 
-                // Get target by offsetting from april tag position
-                Pose2d target = new Pose2d(detection.ftcPose.x + adjustedOffset.getX(), detection.ftcPose.y + adjustedOffset.getY(), new Rotation2d());
+                // Get target by offsetting from april tag position and projecting y coordinate to ground
+                Pose2d target = new Pose2d(detection.ftcPose.x + adjustedOffset.getX(), detection.ftcPose.y * Math.cos(detection.ftcPose.pitch) + adjustedOffset.getY(), new Rotation2d());
                 telemetry.addData("Target X", target.getX());
                 telemetry.addData("Target Y", target.getY());
 
