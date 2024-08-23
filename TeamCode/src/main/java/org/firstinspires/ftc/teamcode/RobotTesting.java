@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.drivebase.DifferentialDrive;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
@@ -10,9 +13,15 @@ import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
+@Config
 @TeleOp(name = "Robot Testing")
 public class RobotTesting extends LinearOpMode {
+
+    private static class SGVCoefficients {
+        public double s, g, v;
+    }
 
     private GamepadEx driverGamepad = null;
     private GamepadEx ballerGamepad = null;
@@ -23,13 +32,22 @@ public class RobotTesting extends LinearOpMode {
     private ServoEx rightServo = null;
     private ToggleButtonReader hDriveToggle = null;
 
+    public static int linearMotionTarget;
+    public static PIDCoefficients linearMotionPID = new PIDCoefficients();
+    public static SGVCoefficients linearMotionSGV = new SGVCoefficients();
+    private int lastLinearMotionTarget;
+
+    private LinearMotionMotor linearMotionLeader = null;
     private MotorGroup linearMotion = null;
+
+    private MultipleTelemetry dashboardTelemetry;
 
     @Override
     public void runOpMode() {
 
+        initDashboard();
         initInputs();
-        initHDrive();
+        //initHDrive();
         initLinearMotion();
 
         waitForStart();
@@ -37,15 +55,21 @@ public class RobotTesting extends LinearOpMode {
         if (opModeIsActive()) {
             while (opModeIsActive()) {
 
-                runHDrive();
+                //runHDrive();
                 runLinearMotion();
+                linearMotionDashboardTelemetry();
 
                 sleep(20);
                 telemetry.update();
+                dashboardTelemetry.update();
 
             }
         }
 
+    }
+
+    private void initDashboard() {
+        dashboardTelemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     private void initInputs() {
@@ -101,20 +125,38 @@ public class RobotTesting extends LinearOpMode {
     }
 
     private void initLinearMotion() {
-        Motor leftMotor = new Motor(hardwareMap, "linear left", 28 * 12, 6000);
-        Motor rightMotor = new Motor(hardwareMap, "linear right", 28 * 12, 6000);
-        rightMotor.setInverted(true);
+        linearMotionLeader = new LinearMotionMotor(hardwareMap, "linear left", 28 * 12, 6000);
+        linearMotionLeader.setPositionCoefficients(linearMotionPID.p, linearMotionPID.i, linearMotionPID.d);
+        linearMotionLeader.setFeedforwardCoefficients(linearMotionSGV.s, linearMotionSGV.g, linearMotionSGV.v);
 
-        linearMotion = new MotorGroup(leftMotor, rightMotor);
-        linearMotion.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        Motor follower = new Motor(hardwareMap, "linear right", 28 * 12, 6000);
+        follower.setInverted(true);
+
+        linearMotion = new MotorGroup(linearMotionLeader, follower);
         linearMotion.setRunMode(Motor.RunMode.PositionControl);
-        linearMotion.setPositionCoefficient(0.01);
         linearMotion.setPositionTolerance(10);
         linearMotion.resetEncoder();
         linearMotion.set(0);
     }
 
     private void runLinearMotion() {
+        if (!linearMotion.atTargetPosition()) {
+            linearMotion.set(0.1);
+        } else {
+            linearMotion.set(0);
+        }
+    }
 
+    private void linearMotionDashboardTelemetry() {
+        linearMotionLeader.setPositionCoefficients(linearMotionPID.p, linearMotionPID.i, linearMotionPID.d);
+        linearMotionLeader.setFeedforwardCoefficients(linearMotionSGV.s, linearMotionSGV.g, linearMotionSGV.v);
+
+        if (lastLinearMotionTarget != linearMotionTarget) {
+            linearMotion.setTargetPosition(linearMotionTarget);
+            lastLinearMotionTarget = linearMotionTarget;
+        }
+
+        dashboardTelemetry.addData("target", linearMotionTarget);
+        dashboardTelemetry.addData("pos", linearMotionLeader.getCurrentPosition());
     }
 }
