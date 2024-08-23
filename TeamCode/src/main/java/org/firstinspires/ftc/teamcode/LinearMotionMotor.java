@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
  */
 public class LinearMotionMotor extends Motor {
     protected PIDController positionController = new PIDController(1, 0, 0);
-    protected ElevatorFeedforward feedforward = new ElevatorFeedforward(0, 0, 0);
+    protected double kg;
 
     public LinearMotionMotor() {
     }
@@ -74,8 +74,7 @@ public class LinearMotionMotor extends Motor {
             motor.setPower(velocity / ACHIEVABLE_MAX_TICKS_PER_SECOND);
         } else if (runmode == RunMode.PositionControl) {
             double error = positionController.calculate(encoder.getPosition());
-            // TODO: Customise position control behaviour and check if this is working
-            motor.setPower(output * error + feedforward.calculate(encoder.getRawVelocity()));
+            motor.setPower(output * error + kg);
         } else {
             motor.setPower(output);
         }
@@ -85,14 +84,16 @@ public class LinearMotionMotor extends Motor {
         positionController.setPID(kp, ki, kd);
     }
 
-    public void setFeedforwardCoefficients(double ks, double kg, double kv) {
-        feedforward = new ElevatorFeedforward(ks, kg, kv);
+    public void setGravityGain(double kg) {
+        this.kg = kg;
     }
 
     @Override
     public void setPositionTolerance(double tolerance) {
         positionController.setTolerance(tolerance);
     }
+
+    public double getTargetPosition() { return positionController.getSetPoint(); }
 
     @Override
     public void setTargetPosition(int target) {
