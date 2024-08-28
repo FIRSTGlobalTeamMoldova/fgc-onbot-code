@@ -10,6 +10,7 @@ import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -24,6 +25,7 @@ import java.util.List;
 
 import global.first.FeedingTheFutureGameDatabase;
 
+@Disabled
 @TeleOp(name = "Close Alignment Test")
 public class CloseAlignmentTest extends LinearOpMode {
 

@@ -47,8 +47,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
  * This OpMode illustrates the basics of AprilTag recognition and pose estimation,
  * using the Hydrogen Horizons tag library from HydrogenHorizonsTagLibrary.jar.
  */
+@Disabled
 @TeleOp(name = "Feeding the Future AprilTag sample")
-//@Disabled
 public class FeedingTheFutureAprilTagSample extends LinearOpMode {
     /**
      * {@link #aprilTag} is the variable to store our instance of the AprilTag processor.

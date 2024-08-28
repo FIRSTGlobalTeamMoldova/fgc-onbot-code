@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Size;
+
 import com.arcrobotics.ftclib.drivebase.DifferentialDrive;
 import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -12,6 +14,7 @@ import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -27,8 +30,9 @@ import java.util.List;
 
 import global.first.FeedingTheFutureGameDatabase;
 
-@TeleOp(name = "Robot Testing")
-public class RobotTesting extends LinearOpMode {
+@Disabled
+@TeleOp(name = "Robot Testing V1")
+public class RobotTestingV1 extends LinearOpMode {
 
     private class AlignPosition {
         public int aprilTagID;
@@ -115,8 +119,11 @@ public class RobotTesting extends LinearOpMode {
     }
 
     private void initHDrive() {
-        Motor leftDrive  = new Motor(hardwareMap, "left drive", 28 * 12, 6000);
+        Motor leftDrive = new Motor(hardwareMap, "left drive", 28 * 12, 6000);
         Motor rightDrive = new Motor(hardwareMap, "right drive", 28 * 12, 6000);
+
+        leftDrive.setVeloCoefficients(3, 0, 0);
+        rightDrive.setVeloCoefficients(3, 0, 0);
 
         leftDrive.setRunMode(Motor.RunMode.VelocityControl);
         rightDrive.setRunMode(Motor.RunMode.VelocityControl);
@@ -174,6 +181,7 @@ public class RobotTesting extends LinearOpMode {
     }
 
     boolean isGoingToPos;
+
     private void runLinearMotion() {
         for (LinearMotionPosition pos : linearMotionPositions) {
             if (pos.buttonReader.isDown()) {
@@ -221,12 +229,11 @@ public class RobotTesting extends LinearOpMode {
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(webcamName);
         builder.addProcessor(processor);
-        builder.setAutoStartStreamOnBuild(true);
-        builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+        builder.setCameraResolution(new Size(1280, 720));
         portal = builder.build();
 
         alignPositions.add(new AlignPosition(
-                100,
+                101,
                 new Translation2d(0, -0.5),
                 driverGamepad,
                 GamepadKeys.Button.X));
@@ -234,6 +241,7 @@ public class RobotTesting extends LinearOpMode {
 
     /**
      * Runs the aligning logic when holding down a button
+     *
      * @return Whether the robot is currently aligning
      */
     private boolean runVision() {
@@ -250,6 +258,8 @@ public class RobotTesting extends LinearOpMode {
         List<AprilTagDetection> currentDetections = processor.getDetections();
 
         if (currentDetections.isEmpty()) {
+            driveBase.stop();
+            hDrive.stopMotor();
             return;
         }
 
@@ -263,6 +273,8 @@ public class RobotTesting extends LinearOpMode {
 
         // If april tag wasn't found, do nothing
         if (detection == null) {
+            driveBase.stop();
+            hDrive.stopMotor();
             return;
         }
 
@@ -293,8 +305,8 @@ public class RobotTesting extends LinearOpMode {
         telemetry.addData("Direction Angle", Math.asin(normalizedDirection.getY()) * 180 / Math.PI);
 
         Translation2d targetWorldVelocity = new Translation2d(
-                Math.max(direction.getX(), alignSpeedMPS),
-                Math.max(direction.getY(), alignSpeedMPS));
+                Math.max(direction.getX(), alignSpeedMPS) * Math.signum(direction.getX()),
+                Math.max(direction.getY(), alignSpeedMPS) * Math.signum(direction.getY()));
 
         // Rotate target velocity vector by april tag angle to convert to local velocity
         Translation2d targetLocalVelocity = new Translation2d(
@@ -312,21 +324,12 @@ public class RobotTesting extends LinearOpMode {
 
         // Move the robot, adding the tangential velocities on the tank wheels
         driveBase.tankDrive(
-                mpsToOutput(motorOutputs.getY(), 12, 90),
-                mpsToOutput(motorOutputs.getY(), 12, 90));
-        hDrive.set(mpsToOutput(motorOutputs.getX(), 9, 60));
-    }
+                motorOutputs.getY(),
+                motorOutputs.getY());
+        hDrive.set(motorOutputs.getX());
 
-    private double mpsToOutput(double mps, double gearboxRatio, double wheelDiameterMM) {
-        if (mps == 0)
-            return 0;
 
-        double rpsFinal = 100 / gearboxRatio;
-
-        double distancePerRotation = wheelDiameterMM * 0.001 * Math.PI;
-
-        double rotationTarget = mps / distancePerRotation;
-
-        return rotationTarget / rpsFinal;
+        telemetry.addData("Tank Out", motorOutputs.getY());
+        telemetry.addData("H Drive Out", motorOutputs.getX());
     }
 }
