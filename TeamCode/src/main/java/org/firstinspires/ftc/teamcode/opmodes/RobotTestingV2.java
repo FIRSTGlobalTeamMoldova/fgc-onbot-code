@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmodes;
 
 import android.util.Size;
 
@@ -7,9 +7,6 @@ import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
-import com.arcrobotics.ftclib.geometry.Pose2d;
-import com.arcrobotics.ftclib.geometry.Rotation2d;
-import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
@@ -31,17 +28,17 @@ import java.util.List;
 import global.first.FeedingTheFutureGameDatabase;
 
 @Disabled
-@TeleOp(name = "Robot Testing V1")
-public class RobotTestingV1 extends LinearOpMode {
+@TeleOp(name = "Robot Testing")
+public class RobotTestingV2 extends LinearOpMode {
 
     private class AlignPosition {
         public int aprilTagID;
-        public Translation2d offsetMeters = new Translation2d();
+        public double offsetX;
         public ButtonReader buttonReader;
 
-        public AlignPosition(int aprilTagID, Translation2d offsetMeters, GamepadEx gamepad, GamepadKeys.Button button) {
+        public AlignPosition(int aprilTagID, double offsetX, GamepadEx gamepad, GamepadKeys.Button button) {
             this.aprilTagID = aprilTagID;
-            this.offsetMeters = offsetMeters;
+            this.offsetX = offsetX;
 
             buttonReader = new ButtonReader(gamepad, button);
         }
@@ -81,9 +78,6 @@ public class RobotTestingV1 extends LinearOpMode {
     private AprilTagProcessor processor = null;
     private VisionPortal portal = null;
 
-    // Alignment
-    private final double alignSpeedMPS = 0.3;
-
     @Override
     public void runOpMode() {
 
@@ -118,12 +112,17 @@ public class RobotTestingV1 extends LinearOpMode {
         ballerGamepad = new GamepadEx(gamepad2);
     }
 
+    //region H Drive
+
     private void initHDrive() {
         Motor leftDrive = new Motor(hardwareMap, "left drive", 28 * 12, 6000);
         Motor rightDrive = new Motor(hardwareMap, "right drive", 28 * 12, 6000);
 
         leftDrive.setVeloCoefficients(3, 0, 0);
         rightDrive.setVeloCoefficients(3, 0, 0);
+
+        leftDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        rightDrive.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         leftDrive.setRunMode(Motor.RunMode.VelocityControl);
         rightDrive.setRunMode(Motor.RunMode.VelocityControl);
@@ -164,46 +163,73 @@ public class RobotTestingV1 extends LinearOpMode {
         }
     }
 
+    //endregion
+
+    //region Linear Motion
+
     private void initLinearMotion() {
         Motor leader = new Motor(hardwareMap, "linear left", 28 * 100, 6000);
         Motor follower = new Motor(hardwareMap, "linear right", 28 * 100, 6000);
 
         linearMotion = new MotorGroup(leader, follower);
         linearMotion.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        linearMotion.setPositionCoefficient(0.1);
+        linearMotion.setPositionCoefficient(0.05);
+        linearMotion.setPositionTolerance(10);
         linearMotion.setInverted(true);
         linearMotion.resetEncoder();
-        linearMotion.set(0);
+        linearMotion.stopMotor();
 
         // Position configuration
         linearMotionPositions.add(new LinearMotionPosition(0, ballerGamepad, GamepadKeys.Button.A));
-        linearMotionPositions.add(new LinearMotionPosition(2000, ballerGamepad, GamepadKeys.Button.B));
+        linearMotionPositions.add(new LinearMotionPosition(4000, ballerGamepad, GamepadKeys.Button.X));
+        linearMotionPositions.add(new LinearMotionPosition(6000, ballerGamepad, GamepadKeys.Button.B));
+        linearMotionPositions.add(new LinearMotionPosition(8000, ballerGamepad, GamepadKeys.Button.Y));
     }
 
-    boolean isGoingToPos;
+    boolean linearMotionIsGoingToPos;
+    final double linearMotionBoundMin = 0,
+            linearMotionBoundMax = 8000,
+            linearMotionBoundSafetyBorder = 100;
 
     private void runLinearMotion() {
         for (LinearMotionPosition pos : linearMotionPositions) {
-            if (pos.buttonReader.isDown()) {
+            pos.buttonReader.readValue();
+            if (pos.buttonReader.wasJustPressed()) {
                 linearMotion.setRunMode(Motor.RunMode.PositionControl);
                 linearMotion.setTargetPosition(pos.position);
-                isGoingToPos = true;
+                linearMotionIsGoingToPos = true;
             }
         }
 
-        if (!linearMotion.atTargetPosition()) {
-            linearMotion.set(0.1);
-        } else {
-            linearMotion.set(0);
-            isGoingToPos = false;
+        if (linearMotionIsGoingToPos) {
+            if (!linearMotion.atTargetPosition()) {
+                linearMotion.set(0.1);
+            } else {
+                linearMotion.stopMotor();
+                linearMotionIsGoingToPos = false;
+            }
         }
 
-        if (!isGoingToPos || ballerGamepad.getLeftY() != 0) {
+        // If not going towards a target or moving the joystick
+        if (!linearMotionIsGoingToPos || ballerGamepad.getLeftY() != 0) {
             linearMotion.setRunMode(Motor.RunMode.RawPower);
-            linearMotion.set(ballerGamepad.getLeftY());
-            isGoingToPos = false;
+
+            // Bounds logic
+            double lmPos = linearMotion.getPositions().get(0);
+            if ((ballerGamepad.getLeftY() > 0 && lmPos < linearMotionBoundMax - linearMotionBoundSafetyBorder) ||
+                    (ballerGamepad.getLeftY() < 0 && lmPos > linearMotionBoundMin + linearMotionBoundSafetyBorder)) {
+                linearMotion.set(ballerGamepad.getLeftY());
+            } else {
+                linearMotion.stopMotor();
+            }
+
+            linearMotionIsGoingToPos = false;
         }
     }
+
+    //endregion
+
+    //region Basket
 
     private void initBasket() {
         Motor left = new Motor(hardwareMap, "basket left");
@@ -218,10 +244,14 @@ public class RobotTestingV1 extends LinearOpMode {
         basket.set(ballerGamepad.getRightY());
     }
 
+    //endregion
+
+    //region Vision
+
     private void initVision() {
         processor = new AprilTagProcessor.Builder()
                 .setTagLibrary(FeedingTheFutureGameDatabase.getFeedingTheFutureTagLibrary())
-                .setOutputUnits(DistanceUnit.METER, AngleUnit.RADIANS)
+                .setOutputUnits(DistanceUnit.METER, AngleUnit.DEGREES)
                 .build();
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
@@ -234,7 +264,7 @@ public class RobotTestingV1 extends LinearOpMode {
 
         alignPositions.add(new AlignPosition(
                 101,
-                new Translation2d(0, -0.5),
+                0,
                 driverGamepad,
                 GamepadKeys.Button.X));
     }
@@ -247,16 +277,17 @@ public class RobotTestingV1 extends LinearOpMode {
     private boolean runVision() {
         for (AlignPosition pos : alignPositions) {
             if (pos.buttonReader.isDown()) {
-                align(pos.aprilTagID, pos.offsetMeters);
+                align(pos.aprilTagID, pos.offsetX);
                 return true;
             }
         }
         return false;
     }
 
-    private void align(int aprilTagID, Translation2d offsetMeters) {
+    private void align(int aprilTagID, double offsetX) {
         List<AprilTagDetection> currentDetections = processor.getDetections();
 
+        // No april tags detected
         if (currentDetections.isEmpty()) {
             driveBase.stop();
             hDrive.stopMotor();
@@ -279,57 +310,13 @@ public class RobotTestingV1 extends LinearOpMode {
         }
 
         telemetry.addData("April Tag Id", detection.id);
-        telemetry.addData("April Tag Position X", detection.ftcPose.x);
-        telemetry.addData("April Tag Position Y", detection.ftcPose.y);
-        telemetry.addData("April Tag Rotation Yaw", detection.ftcPose.yaw * 180 / Math.PI);
-        telemetry.addData("April Tag Rotation Pitch", detection.ftcPose.pitch * 180 / Math.PI);
 
-        // Rotate offset to match april tag angle
-        double theta = detection.ftcPose.yaw;
-        Translation2d adjustedOffset = new Translation2d(
-                offsetMeters.getX() * Math.cos(theta) - offsetMeters.getY() * Math.sin(theta),
-                offsetMeters.getX() * Math.sin(theta) + offsetMeters.getY() * Math.cos(theta));
-        telemetry.addData("Offset X", adjustedOffset.getX());
-        telemetry.addData("Offset Y", adjustedOffset.getY());
+        double tagX = detection.ftcPose.x;
+        double yaw = detection.ftcPose.yaw;
 
-        // Get target by offsetting from april tag position and projecting y coordinate to ground
-        Pose2d target = new Pose2d(detection.ftcPose.x + adjustedOffset.getX(), detection.ftcPose.y * Math.cos(detection.ftcPose.pitch) + adjustedOffset.getY(), new Rotation2d());
-        telemetry.addData("Target X", target.getX());
-        telemetry.addData("Target Y", target.getY());
-
-        // Get direction vector towards april tag
-        Translation2d direction = target.getTranslation();
-        Translation2d normalizedDirection = direction.div(direction.getNorm());
-        telemetry.addData("Direction X", normalizedDirection.getX());
-        telemetry.addData("Direction Y", normalizedDirection.getY());
-        telemetry.addData("Direction Angle", Math.asin(normalizedDirection.getY()) * 180 / Math.PI);
-
-        Translation2d targetWorldVelocity = new Translation2d(
-                Math.max(direction.getX(), alignSpeedMPS) * Math.signum(direction.getX()),
-                Math.max(direction.getY(), alignSpeedMPS) * Math.signum(direction.getY()));
-
-        // Rotate target velocity vector by april tag angle to convert to local velocity
-        Translation2d targetLocalVelocity = new Translation2d(
-                targetWorldVelocity.getX() * Math.cos(theta) - targetWorldVelocity.getY() * Math.sin(theta),
-                targetWorldVelocity.getX() * Math.sin(theta) + targetWorldVelocity.getY() * Math.cos(theta));
-        telemetry.addData("Local Length", targetLocalVelocity.getNorm());
-        telemetry.addData("Local X", targetLocalVelocity.getX());
-        telemetry.addData("Local Y", targetLocalVelocity.getY());
-        telemetry.addData("Local Angle", Math.asin(targetLocalVelocity.getY() / targetLocalVelocity.getNorm()) * 180 / Math.PI);
-
-        // Convert local velocity to motor outputs
-        Translation2d motorOutputs = new Translation2d(
-                targetLocalVelocity.getX(),
-                targetLocalVelocity.getY());
-
-        // Move the robot, adding the tangential velocities on the tank wheels
-        driveBase.tankDrive(
-                motorOutputs.getY(),
-                motorOutputs.getY());
-        hDrive.set(motorOutputs.getX());
-
-
-        telemetry.addData("Tank Out", motorOutputs.getY());
-        telemetry.addData("H Drive Out", motorOutputs.getX());
+        telemetry.addData("April Tag Position X", tagX);
+        telemetry.addData("April Tag Rotation Yaw", yaw);
     }
+
+    //endregion
 }
