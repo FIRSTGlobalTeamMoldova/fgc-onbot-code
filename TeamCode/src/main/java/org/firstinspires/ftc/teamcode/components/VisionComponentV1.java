@@ -2,11 +2,13 @@ package org.firstinspires.ftc.teamcode.components;
 
 import android.util.Size;
 
+import com.arcrobotics.ftclib.controller.PController;
 import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -42,6 +44,9 @@ public class VisionComponentV1 implements IComponent {
     private final AprilTagProcessor processor;
     private final VisionPortal portal;
 
+    private final PController xAlignController = new PController(2);
+    private final PController orientationController = new PController(0.01);
+
     public VisionComponentV1(GamepadEx targetGamepad, HardwareMap hardwareMap, DrivingBase drivingBase, IToggle driveBaseControlComponent) {
         processor = new AprilTagProcessor.Builder()
                 .setTagLibrary(FeedingTheFutureGameDatabase.getFeedingTheFutureTagLibrary())
@@ -53,7 +58,6 @@ public class VisionComponentV1 implements IComponent {
         VisionPortal.Builder builder = new VisionPortal.Builder();
         builder.setCamera(webcamName);
         builder.addProcessor(processor);
-        builder.setCameraResolution(new Size(1280, 720));
         portal = builder.build();
 
         this.drivingBase = drivingBase;
@@ -103,5 +107,11 @@ public class VisionComponentV1 implements IComponent {
 
         double tagX = detection.ftcPose.x;
         double yaw = detection.ftcPose.yaw;
+
+        double hDriveOut = xAlignController.calculate(tagX, offsetX);
+        double tanVel = orientationController.calculate(yaw, 0);
+
+        drivingBase.tankWheels.tankDrive(-tanVel, tanVel);
+        drivingBase.hDrive.set(hDriveOut);
     }
 }
