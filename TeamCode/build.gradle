@@ -25,8 +25,8 @@ android {
 
 dependencies {
     implementation project(':FtcRobotController')
-    implementation files('/Users/mihai/Downloads/FeedingTheFutureAprilTagLibrary-2.0.jar')
     implementation 'org.ftclib.ftclib:vision:2.1.0'
     implementation 'org.ftclib.ftclib:core:2.1.1'
+    implementation files('../FeedingTheFutureAprilTagLibrary-2.0.jar')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 }
