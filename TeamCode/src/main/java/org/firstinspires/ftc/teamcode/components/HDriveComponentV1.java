@@ -4,6 +4,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 
+import org.firstinspires.ftc.teamcode.utilities.ComponentConfig;
 import org.firstinspires.ftc.teamcode.utilities.IComponent;
 import org.firstinspires.ftc.teamcode.utilities.IToggle;
 
@@ -14,7 +15,7 @@ public class HDriveComponentV1 implements IComponent, IToggle {
     private final ToggleButtonReader hDriveToggle;
     private boolean enabled = true;
 
-    public HDriveComponentV1(GamepadEx targetGamepad, DrivingBase drivingBase) {
+    public HDriveComponentV1(DrivingBase drivingBase) {
         this.targetGamepad = targetGamepad;
         this.drivingBase = drivingBase;
 
@@ -35,6 +36,11 @@ public class HDriveComponentV1 implements IComponent, IToggle {
                 drivingBase.setServos(false);
             }
         }
+    }
+
+    @Override
+    public void loadConfig(ComponentConfig config) {
+
     }
 
     @Override
