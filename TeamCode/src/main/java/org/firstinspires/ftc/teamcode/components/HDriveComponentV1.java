@@ -1,7 +1,8 @@
 package org.firstinspires.ftc.teamcode.components;
 
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
+import com.arcrobotics.ftclib.gamepad.ButtonReader;
+import com.arcrobotics.ftclib.gamepad.TriggerReader;
 
 import org.firstinspires.ftc.teamcode.utilities.Component;
 import org.firstinspires.ftc.teamcode.utilities.IToggle;
@@ -9,7 +10,7 @@ import org.firstinspires.ftc.teamcode.utilities.IToggle;
 public class HDriveComponentV1 extends Component implements IToggle {
     private final DrivingBase drivingBase;
 
-    private ToggleButtonReader hDriveToggle;
+    private ButtonReader hDriveToggle;
     private boolean enabled = true;
 
     public HDriveComponentV1(DrivingBase drivingBase) {
@@ -18,17 +19,22 @@ public class HDriveComponentV1 extends Component implements IToggle {
 
     @Override
     public void initializeComponent() {
-        hDriveToggle = new ToggleButtonReader(driverGamepad, GamepadKeys.Button.RIGHT_BUMPER);
+        hDriveToggle = new ButtonReader(driverGamepad, GamepadKeys.Button.RIGHT_BUMPER);
     }
 
     @Override
     public void runLoop() {
         if (enabled) {
             drivingBase.tankWheels.arcadeDrive(driverGamepad.getLeftY(),
-                    driverGamepad.getRightX());
-            hDriveToggle.readValue();
-            if (hDriveToggle.getState()) {
-                drivingBase.hDrive.set(driverGamepad.getLeftX());
+                    driverGamepad.getRightX(), true);
+            if (hDriveToggle.isDown()) {
+                double leftTrigger = driverGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
+                double rightTrigger = driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
+                if (leftTrigger > 0.1 || rightTrigger > 0.1) {
+                    drivingBase.hDrive.set(Math.pow(rightTrigger - leftTrigger, 2));
+                } else {
+                    drivingBase.hDrive.set(Math.pow(driverGamepad.getLeftX(), 2));
+                }
                 drivingBase.setServos(true);
             } else {
                 drivingBase.hDrive.stopMotor();
