@@ -31,9 +31,9 @@ public class HDriveComponentV1 extends Component implements IToggle {
                 double leftTrigger = driverGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
                 double rightTrigger = driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
                 if (leftTrigger > 0.1 || rightTrigger > 0.1) {
-                    drivingBase.hDrive.set(Math.pow(rightTrigger - leftTrigger, 2));
+                    drivingBase.hDrive.set(Math.pow(rightTrigger - leftTrigger, 2) * Math.signum(rightTrigger - leftTrigger));
                 } else {
-                    drivingBase.hDrive.set(Math.pow(driverGamepad.getLeftX(), 2));
+                    drivingBase.hDrive.set(Math.pow(driverGamepad.getLeftX(), 2) * Math.signum(driverGamepad.getLeftX()));
                 }
                 drivingBase.setServos(true);
             } else {
