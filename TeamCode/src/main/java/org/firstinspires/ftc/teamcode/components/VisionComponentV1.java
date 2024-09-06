@@ -1,18 +1,14 @@
 package org.firstinspires.ftc.teamcode.components;
 
-import android.util.Size;
-
 import com.arcrobotics.ftclib.controller.PController;
 import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.utilities.IComponent;
+import org.firstinspires.ftc.teamcode.utilities.Component;
 import org.firstinspires.ftc.teamcode.utilities.IToggle;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -23,7 +19,7 @@ import java.util.List;
 
 import global.first.FeedingTheFutureGameDatabase;
 
-public class VisionComponentV1 implements IComponent {
+public class VisionComponentV1 extends Component {
     private class AlignPosition {
         public int aprilTagID;
         public double offsetX;
@@ -41,13 +37,19 @@ public class VisionComponentV1 implements IComponent {
     private final IToggle driveBaseControlComponent;
 
     private final HashSet<AlignPosition> alignPositions = new HashSet<>();
-    private final AprilTagProcessor processor;
-    private final VisionPortal portal;
+    private AprilTagProcessor processor;
+    private VisionPortal portal;
 
     private final PController xAlignController = new PController(2);
     private final PController orientationController = new PController(0.01);
 
-    public VisionComponentV1(GamepadEx targetGamepad, HardwareMap hardwareMap, DrivingBase drivingBase, IToggle driveBaseControlComponent) {
+    public VisionComponentV1(DrivingBase drivingBase, IToggle driveBaseControlComponent) {
+        this.drivingBase = drivingBase;
+        this.driveBaseControlComponent = driveBaseControlComponent;
+    }
+
+    @Override
+    public void initializeComponent() {
         processor = new AprilTagProcessor.Builder()
                 .setTagLibrary(FeedingTheFutureGameDatabase.getFeedingTheFutureTagLibrary())
                 .setOutputUnits(DistanceUnit.METER, AngleUnit.DEGREES)
@@ -60,13 +62,10 @@ public class VisionComponentV1 implements IComponent {
         builder.addProcessor(processor);
         portal = builder.build();
 
-        this.drivingBase = drivingBase;
-        this.driveBaseControlComponent = driveBaseControlComponent;
-
         alignPositions.add(new AlignPosition(
                 101,
                 0,
-                targetGamepad,
+                driverGamepad,
                 GamepadKeys.Button.X));
     }
 
@@ -111,7 +110,7 @@ public class VisionComponentV1 implements IComponent {
         double hDriveOut = xAlignController.calculate(tagX, offsetX);
         double tanVel = orientationController.calculate(yaw, 0);
 
-        drivingBase.tankWheels.tankDrive(-tanVel, tanVel);
+        //drivingBase.tankWheels.tankDrive(-tanVel, tanVel);
         drivingBase.hDrive.set(hDriveOut);
     }
 }

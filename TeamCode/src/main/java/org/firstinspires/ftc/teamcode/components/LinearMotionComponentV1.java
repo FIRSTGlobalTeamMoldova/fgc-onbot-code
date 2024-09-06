@@ -5,14 +5,14 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.utilities.IComponent;
+import org.firstinspires.ftc.teamcode.utilities.ComponentConfig;
+import org.firstinspires.ftc.teamcode.utilities.Component;
 import org.firstinspires.ftc.teamcode.utilities.RobotConstants;
 
 import java.util.HashSet;
 
-public class LinearMotionComponentV1 implements IComponent {
+public class LinearMotionComponentV1 extends Component {
     private class LinearMotionPosition {
         public int position;
         public ButtonReader buttonReader;
@@ -24,14 +24,23 @@ public class LinearMotionComponentV1 implements IComponent {
         }
     }
 
-    private final GamepadEx targetGamepad;
-
     private final HashSet<LinearMotionPosition> linearMotionPositions = new HashSet<>();
-    private final MotorGroup linearMotion;
+    private MotorGroup linearMotion;
 
     private boolean useBounds = true;
 
-    public LinearMotionComponentV1(GamepadEx targetGamepad, HardwareMap hardwareMap) {
+    public LinearMotionComponentV1 IgnoreBounds() {
+        useBounds = false;
+        return this;
+    }
+
+    boolean linearMotionIsGoingToPos;
+    final double linearMotionBoundMin = 0,
+            linearMotionBoundMax = 8000,
+            linearMotionBoundSafetyBorder = 100;
+
+    @Override
+    public void initializeComponent() {
         Motor leader = new Motor(hardwareMap, RobotConstants.LINEAR_LEFT);
         Motor follower = new Motor(hardwareMap, RobotConstants.LINEAR_RIGHT);
 
@@ -44,23 +53,11 @@ public class LinearMotionComponentV1 implements IComponent {
         linearMotion.stopMotor();
 
         // Position configuration
-        linearMotionPositions.add(new LinearMotionPosition(0, targetGamepad, GamepadKeys.Button.A));
-        linearMotionPositions.add(new LinearMotionPosition(4000, targetGamepad, GamepadKeys.Button.X));
-        linearMotionPositions.add(new LinearMotionPosition(6000, targetGamepad, GamepadKeys.Button.B));
-        linearMotionPositions.add(new LinearMotionPosition(8000, targetGamepad, GamepadKeys.Button.Y));
-
-        this.targetGamepad = targetGamepad;
+        linearMotionPositions.add(new LinearMotionPosition(0, ballerGamepad, GamepadKeys.Button.A));
+        linearMotionPositions.add(new LinearMotionPosition(4000, ballerGamepad, GamepadKeys.Button.X));
+        linearMotionPositions.add(new LinearMotionPosition(6000, ballerGamepad, GamepadKeys.Button.B));
+        linearMotionPositions.add(new LinearMotionPosition(8000, ballerGamepad, GamepadKeys.Button.Y));
     }
-
-    public LinearMotionComponentV1 IgnoreBounds() {
-        useBounds = false;
-        return this;
-    }
-
-    boolean linearMotionIsGoingToPos;
-    final double linearMotionBoundMin = 0,
-            linearMotionBoundMax = 8000,
-            linearMotionBoundSafetyBorder = 100;
 
     @Override
     public void runLoop() {
@@ -83,20 +80,20 @@ public class LinearMotionComponentV1 implements IComponent {
         }
 
         // If not going towards a target or moving the joystick
-        if (!linearMotionIsGoingToPos || targetGamepad.getLeftY() != 0) {
+        if (!linearMotionIsGoingToPos || ballerGamepad.getLeftY() != 0) {
             linearMotion.setRunMode(Motor.RunMode.RawPower);
 
             if (useBounds) {
                 // Bounds logic
                 double lmPos = linearMotion.getPositions().get(0);
-                if ((targetGamepad.getLeftY() > 0 && lmPos < linearMotionBoundMax - linearMotionBoundSafetyBorder) ||
-                        (targetGamepad.getLeftY() < 0 && lmPos > linearMotionBoundMin + linearMotionBoundSafetyBorder)) {
-                    linearMotion.set(targetGamepad.getLeftY());
+                if ((ballerGamepad.getLeftY() > 0 && lmPos < linearMotionBoundMax - linearMotionBoundSafetyBorder) ||
+                        (ballerGamepad.getLeftY() < 0 && lmPos > linearMotionBoundMin + linearMotionBoundSafetyBorder)) {
+                    linearMotion.set(ballerGamepad.getLeftY());
                 } else {
                     linearMotion.stopMotor();
                 }
             } else {
-                linearMotion.set(targetGamepad.getLeftY());
+                linearMotion.set(ballerGamepad.getLeftY());
             }
 
             linearMotionIsGoingToPos = false;
