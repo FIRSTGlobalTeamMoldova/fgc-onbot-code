@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import java.util.HashSet;
 
 public abstract class ComponentOpMode extends LinearOpMode {
-    protected final HashSet<IComponent> components = new HashSet<>();
+    protected final HashSet<Component> components = new HashSet<>();
 
     @Override
     public void runOpMode() {
@@ -17,7 +17,7 @@ public abstract class ComponentOpMode extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                for (IComponent component : components) {
+                for (Component component : components) {
                     component.runLoop();
                 }
 
@@ -33,8 +33,9 @@ public abstract class ComponentOpMode extends LinearOpMode {
 
         ComponentConfig config = new ComponentConfig(hardwareMap, driverGamepad, ballerGamepad, telemetry);
 
-        for (IComponent component : components) {
+        for (Component component : components) {
             component.loadConfig(config);
+            component.initializeComponent();
         }
     }
 

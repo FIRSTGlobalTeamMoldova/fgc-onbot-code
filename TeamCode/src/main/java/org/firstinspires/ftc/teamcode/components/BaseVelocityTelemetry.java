@@ -1,24 +1,15 @@
 package org.firstinspires.ftc.teamcode.components;
 
-import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.utilities.IComponent;
+import org.firstinspires.ftc.teamcode.utilities.Component;
 import org.firstinspires.ftc.teamcode.utilities.RobotConstants;
 
-public class BaseVelocityTelemetry implements IComponent {
+public class BaseVelocityTelemetry extends Component {
+    private Motor leftDrive, rightDrive, hDriveLeft, hDriveRight;
 
-    private final GamepadEx driver;
-    private final Telemetry telemetry;
-
-    private final Motor leftDrive, rightDrive, hDriveLeft, hDriveRight;
-
-    public BaseVelocityTelemetry(GamepadEx driver, HardwareMap hardwareMap, Telemetry telemetry) {
-        this.driver = driver;
-        this.telemetry = telemetry;
-
+    @Override
+    public void initializeComponent() {
         leftDrive = new Motor(hardwareMap, RobotConstants.DRIVE_LEFT, RobotConstants.DRIVE_CPR, RobotConstants.HDHEX_RPM);
         rightDrive = new Motor(hardwareMap, RobotConstants.DRIVE_RIGHT, RobotConstants.DRIVE_CPR, RobotConstants.HDHEX_RPM);
 
@@ -28,9 +19,7 @@ public class BaseVelocityTelemetry implements IComponent {
 
     @Override
     public void runLoop() {
-        telemetry.addData("Left Y", driver.getLeftY());
-        telemetry.addData("Left X", driver.getLeftX());
-
+        telemetry.addLine("---------Base-Velocity-Telemetry---------");
         telemetry.addData("Left motor out", getOutput(leftDrive));
         telemetry.addData("Right motor out", getOutput(rightDrive));
         telemetry.addData("HLeft motor out", getOutput(hDriveLeft));

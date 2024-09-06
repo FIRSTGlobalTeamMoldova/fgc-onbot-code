@@ -1,46 +1,40 @@
 package org.firstinspires.ftc.teamcode.components;
 
-import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 
-import org.firstinspires.ftc.teamcode.utilities.ComponentConfig;
-import org.firstinspires.ftc.teamcode.utilities.IComponent;
+import org.firstinspires.ftc.teamcode.utilities.Component;
 import org.firstinspires.ftc.teamcode.utilities.IToggle;
 
-public class HDriveComponentV1 implements IComponent, IToggle {
-    private final GamepadEx targetGamepad;
+public class HDriveComponentV1 extends Component implements IToggle {
     private final DrivingBase drivingBase;
 
-    private final ToggleButtonReader hDriveToggle;
+    private ToggleButtonReader hDriveToggle;
     private boolean enabled = true;
 
     public HDriveComponentV1(DrivingBase drivingBase) {
-        this.targetGamepad = targetGamepad;
         this.drivingBase = drivingBase;
+    }
 
-        hDriveToggle = new ToggleButtonReader(targetGamepad, GamepadKeys.Button.RIGHT_BUMPER);
+    @Override
+    public void initializeComponent() {
+        hDriveToggle = new ToggleButtonReader(driverGamepad, GamepadKeys.Button.RIGHT_BUMPER);
     }
 
     @Override
     public void runLoop() {
         if (enabled) {
-            drivingBase.tankWheels.arcadeDrive(targetGamepad.getLeftY(),
-                    targetGamepad.getRightX());
+            drivingBase.tankWheels.arcadeDrive(driverGamepad.getLeftY(),
+                    driverGamepad.getRightX());
             hDriveToggle.readValue();
             if (hDriveToggle.getState()) {
-                drivingBase.hDrive.set(targetGamepad.getLeftX());
+                drivingBase.hDrive.set(driverGamepad.getLeftX());
                 drivingBase.setServos(true);
             } else {
                 drivingBase.hDrive.stopMotor();
                 drivingBase.setServos(false);
             }
         }
-    }
-
-    @Override
-    public void loadConfig(ComponentConfig config) {
-
     }
 
     @Override
