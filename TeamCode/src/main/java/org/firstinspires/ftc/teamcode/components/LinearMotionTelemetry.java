@@ -11,6 +11,7 @@ public class LinearMotionTelemetry extends Component {
     @Override
     public void initializeComponent() {
         linearLeaderMotor = new Motor(hardwareMap, RobotConstants.LINEAR_LEFT);
+        linearLeaderMotor.resetEncoder();
     }
 
     @Override

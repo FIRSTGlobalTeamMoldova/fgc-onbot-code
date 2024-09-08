@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.components.BaseVelocityTelemetry;
 import org.firstinspires.ftc.teamcode.components.BasketComponentV1;
 import org.firstinspires.ftc.teamcode.components.DrivingBase;
 import org.firstinspires.ftc.teamcode.components.HDriveComponentV1;
+import org.firstinspires.ftc.teamcode.components.JoystickTelemetry;
 import org.firstinspires.ftc.teamcode.components.LinearMotionComponentV1;
 import org.firstinspires.ftc.teamcode.components.LinearMotionTelemetry;
 import org.firstinspires.ftc.teamcode.components.VisionComponentV1;
@@ -19,10 +20,12 @@ public class RobotTestingV4 extends ComponentOpMode {
         HDriveComponentV1 hDrive = new HDriveComponentV1(drivingBase);
 
         components.add(hDrive);
-        components.add(new VisionComponentV1(drivingBase, hDrive));
-        components.add(new LinearMotionComponentV1().IgnoreBounds());
+        //components.add(new VisionComponentV1(drivingBase, hDrive));
+        components.add(new LinearMotionComponentV1());
+        components.add(new BasketComponentV1());
 
         components.add(new BaseVelocityTelemetry());
         components.add(new LinearMotionTelemetry());
+        components.add(new JoystickTelemetry());
     }
 }

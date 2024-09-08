@@ -3,8 +3,11 @@ package org.firstinspires.ftc.teamcode.components;
 import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.arcrobotics.ftclib.gamepad.KeyReader;
+import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorGroup;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.utilities.ComponentConfig;
 import org.firstinspires.ftc.teamcode.utilities.Component;
@@ -25,18 +28,13 @@ public class LinearMotionComponentV1 extends Component {
     }
 
     private final HashSet<LinearMotionPosition> linearMotionPositions = new HashSet<>();
+    private ToggleButtonReader boundsToggle;
+    private ButtonReader encoderReset;
     private MotorGroup linearMotion;
-
-    private boolean useBounds = true;
-
-    public LinearMotionComponentV1 IgnoreBounds() {
-        useBounds = false;
-        return this;
-    }
 
     boolean linearMotionIsGoingToPos;
     final double linearMotionBoundMin = 0,
-            linearMotionBoundMax = 8000,
+            linearMotionBoundMax = 4500,
             linearMotionBoundSafetyBorder = 100;
 
     @Override
@@ -46,7 +44,7 @@ public class LinearMotionComponentV1 extends Component {
 
         linearMotion = new MotorGroup(leader, follower);
         linearMotion.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-        linearMotion.setPositionCoefficient(0.05);
+        linearMotion.setPositionCoefficient(0.1);
         linearMotion.setPositionTolerance(10);
         linearMotion.setInverted(true);
         linearMotion.resetEncoder();
@@ -54,13 +52,21 @@ public class LinearMotionComponentV1 extends Component {
 
         // Position configuration
         linearMotionPositions.add(new LinearMotionPosition(0, ballerGamepad, GamepadKeys.Button.A));
-        linearMotionPositions.add(new LinearMotionPosition(4000, ballerGamepad, GamepadKeys.Button.X));
-        linearMotionPositions.add(new LinearMotionPosition(6000, ballerGamepad, GamepadKeys.Button.B));
-        linearMotionPositions.add(new LinearMotionPosition(8000, ballerGamepad, GamepadKeys.Button.Y));
+        linearMotionPositions.add(new LinearMotionPosition(2500, ballerGamepad, GamepadKeys.Button.X));
+        linearMotionPositions.add(new LinearMotionPosition(3500, ballerGamepad, GamepadKeys.Button.B));
+        linearMotionPositions.add(new LinearMotionPosition(4500, ballerGamepad, GamepadKeys.Button.Y));
+
+        boundsToggle = new ToggleButtonReader(ballerGamepad, GamepadKeys.Button.DPAD_UP);
+        encoderReset = new ButtonReader(ballerGamepad, GamepadKeys.Button.DPAD_LEFT);
     }
 
     @Override
     public void runLoop() {
+        encoderReset.readValue();
+        if (encoderReset.wasJustPressed()) {
+            linearMotion.resetEncoder();
+        }
+
         for (LinearMotionPosition pos : linearMotionPositions) {
             pos.buttonReader.readValue();
             if (pos.buttonReader.wasJustPressed()) {
@@ -83,20 +89,29 @@ public class LinearMotionComponentV1 extends Component {
         if (!linearMotionIsGoingToPos || ballerGamepad.getLeftY() != 0) {
             linearMotion.setRunMode(Motor.RunMode.RawPower);
 
-            if (useBounds) {
+            boundsToggle.readValue();
+            if (!boundsToggle.getState()) {
                 // Bounds logic
                 double lmPos = linearMotion.getPositions().get(0);
                 if ((ballerGamepad.getLeftY() > 0 && lmPos < linearMotionBoundMax - linearMotionBoundSafetyBorder) ||
                         (ballerGamepad.getLeftY() < 0 && lmPos > linearMotionBoundMin + linearMotionBoundSafetyBorder)) {
-                    linearMotion.set(ballerGamepad.getLeftY());
+                    linearMotion.set(scaledJoystickDir());
                 } else {
                     linearMotion.stopMotor();
                 }
             } else {
-                linearMotion.set(ballerGamepad.getLeftY());
+                linearMotion.set(scaledJoystickDir());
             }
 
             linearMotionIsGoingToPos = false;
+        }
+    }
+
+    private double scaledJoystickDir() {
+        if (ballerGamepad.getLeftY() < 0) {
+            return ballerGamepad.getLeftY() / 4;
+        } else {
+            return ballerGamepad.getLeftY();
         }
     }
 }
