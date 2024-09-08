@@ -11,6 +11,8 @@ public class RobotConstants {
     public static final String LINEAR_RIGHT = "linear right";
     public static final String BASKET_LEFT = "basket left";
     public static final String BASKET_RIGHT = "basket right";
+    public static final String BASKET_RIGHT_SERVO = "basket right servo";
+    public static final String BASKET_LEFT_SERVO = "basket left servo";
 
     public static final int DRIVE_CPR = 28 * 15;
     public static final int HDRIVE_CPR = 28 * 9;
