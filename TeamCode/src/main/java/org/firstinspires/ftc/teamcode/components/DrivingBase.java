@@ -16,8 +16,8 @@ public class DrivingBase {
     private final ServoEx rightServo;
 
     public DrivingBase(HardwareMap hardwareMap) {
-        Motor leftDrive = new Motor(hardwareMap, RobotConstants.DRIVE_RIGHT, RobotConstants.DRIVE_CPR, RobotConstants.HDHEX_RPM);
-        Motor rightDrive = new Motor(hardwareMap, RobotConstants.DRIVE_LEFT, RobotConstants.DRIVE_CPR, RobotConstants.HDHEX_RPM);
+        Motor leftDrive = new Motor(hardwareMap, RobotConstants.DRIVE_LEFT, RobotConstants.DRIVE_CPR, RobotConstants.HDHEX_RPM);
+        Motor rightDrive = new Motor(hardwareMap, RobotConstants.DRIVE_RIGHT, RobotConstants.DRIVE_CPR, RobotConstants.HDHEX_RPM);
 
         leftDrive.setVeloCoefficients(3, 0, 0);
         rightDrive.setVeloCoefficients(3, 0, 0);
