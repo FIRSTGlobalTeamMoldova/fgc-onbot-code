@@ -19,7 +19,7 @@ public class BaseVelocityTelemetry extends Component {
 
     @Override
     public void runLoop() {
-        telemetry.addLine("---------Base-Velocity-Telemetry---------");
+        telemetry.addLine("Base Velocity Telemetry:");
         telemetry.addData("Left motor out", getOutput(leftDrive));
         telemetry.addData("Right motor out", getOutput(rightDrive));
         telemetry.addData("HLeft motor out", getOutput(hDriveLeft));

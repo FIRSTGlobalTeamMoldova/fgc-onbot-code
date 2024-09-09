@@ -9,12 +9,14 @@ public class ComponentConfig {
     private final HardwareMap hardwareMap;
     private final GamepadEx driverGamepad, ballerGamepad;
     private final Telemetry telemetry;
+    private final ComponentOpMode parentOpMode;
 
-    public ComponentConfig(HardwareMap hardwareMap, GamepadEx driverGamepad, GamepadEx ballerGamepad, Telemetry telemetry) {
+    public ComponentConfig(HardwareMap hardwareMap, GamepadEx driverGamepad, GamepadEx ballerGamepad, Telemetry telemetry, ComponentOpMode parentOpMode) {
         this.hardwareMap = hardwareMap;
         this.driverGamepad = driverGamepad;
         this.ballerGamepad = ballerGamepad;
         this.telemetry = telemetry;
+        this.parentOpMode = parentOpMode;
     }
 
     public HardwareMap getHardwareMap() {
@@ -47,5 +49,13 @@ public class ComponentConfig {
         }
 
         return telemetry;
+    }
+
+    public ComponentOpMode getParentOpMode() {
+        if (parentOpMode == null) {
+            throw new RuntimeException("Parent Op Mode is null");
+        }
+
+        return parentOpMode;
     }
 }

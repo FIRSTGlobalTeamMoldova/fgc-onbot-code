@@ -39,5 +39,16 @@ public abstract class ComponentOpMode extends LinearOpMode {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T getComponentOfType(Class<T> componentType) {
+        for (Component component : components) {
+            if (componentType.isInstance(component)) {
+                return (T) component;
+            }
+        }
+
+        return null;
+    }
+
     public abstract void componentsSetup();
 }

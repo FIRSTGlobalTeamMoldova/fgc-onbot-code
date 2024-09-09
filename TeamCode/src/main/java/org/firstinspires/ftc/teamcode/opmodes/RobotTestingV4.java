@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.components.LinearMotionTelemetry;
 import org.firstinspires.ftc.teamcode.components.VisionComponentV1;
 import org.firstinspires.ftc.teamcode.utilities.ComponentOpMode;
 
-@TeleOp(name = "Main Experimental")
+@TeleOp(name = "Old reliable code")
 public class RobotTestingV4 extends ComponentOpMode {
     @Override
     public void componentsSetup() {

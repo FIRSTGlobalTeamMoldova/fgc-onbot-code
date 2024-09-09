@@ -9,6 +9,7 @@ public abstract class Component {
     protected HardwareMap hardwareMap;
     protected GamepadEx driverGamepad, ballerGamepad;
     protected Telemetry telemetry;
+    protected ComponentOpMode parentOpMode;
 
     public abstract void initializeComponent();
 
@@ -19,5 +20,6 @@ public abstract class Component {
         driverGamepad = config.getDriverGamepad();
         ballerGamepad = config.getBallerGamepad();
         telemetry = config.getTelemetry();
+        parentOpMode = config.getParentOpMode();
     }
 }
