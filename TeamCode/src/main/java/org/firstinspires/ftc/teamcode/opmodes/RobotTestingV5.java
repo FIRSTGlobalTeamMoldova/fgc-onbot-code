@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.components.JoystickTelemetry;
 import org.firstinspires.ftc.teamcode.components.LinearMotionComponentV2;
 import org.firstinspires.ftc.teamcode.utilities.ComponentOpMode;
 
-@TeleOp(name = "New code")
+@TeleOp(name = "Main")
 public class RobotTestingV5 extends ComponentOpMode {
     @Override
     public void componentsSetup() {
