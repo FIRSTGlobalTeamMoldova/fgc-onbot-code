@@ -31,7 +31,7 @@ public abstract class ComponentOpMode extends LinearOpMode {
         GamepadEx driverGamepad = new GamepadEx(gamepad1);
         GamepadEx ballerGamepad = new GamepadEx(gamepad2);
 
-        ComponentConfig config = new ComponentConfig(hardwareMap, driverGamepad, ballerGamepad, telemetry);
+        ComponentConfig config = new ComponentConfig(hardwareMap, driverGamepad, ballerGamepad, telemetry, this);
 
         for (Component component : components) {
             component.loadConfig(config);

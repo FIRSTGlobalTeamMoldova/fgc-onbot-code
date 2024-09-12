@@ -26,9 +26,11 @@ public class HDriveComponentV2 extends Component {
 
     @Override
     public void runLoop() {
-        drivingBase.tankWheels.setMaxSpeed(slowModeToggle.isDown() ? 0.5 : 1);
-        drivingBase.tankWheels.arcadeDrive(driverGamepad.getLeftY(),
-                driverGamepad.getRightX(), true);
+        double slowModeCoef = slowModeToggle.isDown() ? 0.35 : 1;
+        double slowModeTurnCoef = slowModeToggle.isDown() ? 0.45 : 1;
+
+        drivingBase.tankWheels.arcadeDrive(driverGamepad.getLeftY() * slowModeCoef,
+                driverGamepad.getRightX() * slowModeTurnCoef, true);
 
         if (hDriveToggle.isDown()) {
             double leftTrigger = driverGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
