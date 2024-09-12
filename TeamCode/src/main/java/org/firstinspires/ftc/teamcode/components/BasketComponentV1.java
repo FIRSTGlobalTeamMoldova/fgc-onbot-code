@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.utilities.RobotConstants;
 
 public class BasketComponentV1 extends Component {
     private SimpleServo leftServo, rightServo;
-    private ButtonReader leftReader, rightReader;
+    private ButtonReader leftReader, rightReader, confirmationReader;
 
     @Override
     public void initializeComponent() {
@@ -18,6 +18,7 @@ public class BasketComponentV1 extends Component {
 
         leftReader = new ButtonReader(ballerGamepad, GamepadKeys.Button.LEFT_BUMPER);
         rightReader = new ButtonReader(ballerGamepad, GamepadKeys.Button.RIGHT_BUMPER);
+        confirmationReader = new ButtonReader(driverGamepad, GamepadKeys.Button.X);
 
         leftServo.setPosition(0);
         rightServo.setPosition(1);
@@ -25,16 +26,21 @@ public class BasketComponentV1 extends Component {
 
     @Override
     public void runLoop() {
-        if (ballerGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.15) {
-            leftServo.setPosition(ballerGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER));
-        } else {
-            leftServo.setPosition(leftReader.isDown() ? 0.9 : 0);
-        }
+        if (confirmationReader.isDown()) {
+            if (ballerGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.15) {
+                leftServo.setPosition(ballerGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER));
+            } else {
+                leftServo.setPosition(leftReader.isDown() ? 0.9 : 0);
+            }
 
-        if (ballerGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.15) {
-            rightServo.setPosition(1 - ballerGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER));
+            if (ballerGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.15) {
+                rightServo.setPosition(1 - ballerGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER));
+            } else {
+                rightServo.setPosition(rightReader.isDown() ? 0.1 : 1);
+            }
         } else {
-            rightServo.setPosition(rightReader.isDown() ? 0.1 : 1);
+            leftServo.setPosition(0);
+            rightServo.setPosition(1);
         }
     }
 }

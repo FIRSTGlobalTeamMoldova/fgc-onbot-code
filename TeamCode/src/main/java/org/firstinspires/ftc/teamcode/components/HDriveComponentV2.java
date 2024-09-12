@@ -13,15 +13,11 @@ public class HDriveComponentV2 extends Component {
     private ButtonReader hDriveToggle;
     private ButtonReader slowModeToggle;
 
-    private LinearMotionComponentV2 linearMotion;
-
     @Override
     public void initializeComponent() {
         hDriveToggle = new ButtonReader(driverGamepad, GamepadKeys.Button.RIGHT_BUMPER);
         slowModeToggle = new ButtonReader(driverGamepad, GamepadKeys.Button.LEFT_BUMPER);
         drivingBase = new DrivingBase(hardwareMap);
-
-        linearMotion = parentOpMode.getComponentOfType(LinearMotionComponentV2.class);
     }
 
     @Override
