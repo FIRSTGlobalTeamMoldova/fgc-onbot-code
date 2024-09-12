@@ -30,6 +30,7 @@ public class LinearMotionComponentV2 extends Component {
     private final HashSet<LinearMotionPosition> linearMotionPositions = new HashSet<>();
     private ToggleButtonReader boundsToggle;
     private ButtonReader encoderReset;
+    private GravityGainMotor motionLeader;
     private MotorGroup linearMotion;
 
     boolean linearMotionIsGoingToPos;
@@ -39,11 +40,10 @@ public class LinearMotionComponentV2 extends Component {
 
     @Override
     public void initializeComponent() {
-        GravityGainMotor leader = new GravityGainMotor(hardwareMap, RobotConstants.LINEAR_LEFT);
-        leader.setGravityGain(0);
+        motionLeader = new GravityGainMotor(hardwareMap, RobotConstants.LINEAR_LEFT);
         Motor follower = new Motor(hardwareMap, RobotConstants.LINEAR_RIGHT);
 
-        linearMotion = new MotorGroup(leader, follower);
+        linearMotion = new MotorGroup(motionLeader, follower);
         linearMotion.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         linearMotion.setPositionCoefficient(0.01);
         linearMotion.setPositionTolerance(10);
@@ -57,7 +57,7 @@ public class LinearMotionComponentV2 extends Component {
         linearMotionPositions.add(new LinearMotionPosition(3500, ballerGamepad, GamepadKeys.Button.B));
         linearMotionPositions.add(new LinearMotionPosition(4300, ballerGamepad, GamepadKeys.Button.Y));
 
-        boundsToggle = new ToggleButtonReader(ballerGamepad, GamepadKeys.Button.DPAD_UP);
+        boundsToggle = new ToggleButtonReader(ballerGamepad, GamepadKeys.Button.RIGHT_STICK_BUTTON);
         encoderReset = new ButtonReader(ballerGamepad, GamepadKeys.Button.DPAD_LEFT);
     }
 
@@ -65,6 +65,8 @@ public class LinearMotionComponentV2 extends Component {
     public void runLoop() {
         encoderCheck();
         telemetry();
+
+        motionLeader.setGravityGain(linearMotion.getPositions().get(0) < 1700 ? 0 : 0.2);
 
         for (LinearMotionPosition pos : linearMotionPositions) {
             pos.buttonReader.readValue();
@@ -78,6 +80,7 @@ public class LinearMotionComponentV2 extends Component {
         if (linearMotionIsGoingToPos) {
             if (!linearMotion.atTargetPosition()) {
                 linearMotion.set(0.1);
+                ballerGamepad.gamepad.stopRumble();
             } else {
                 linearMotion.set(0);
                 linearMotionIsGoingToPos = false;
@@ -88,18 +91,23 @@ public class LinearMotionComponentV2 extends Component {
         if (!linearMotionIsGoingToPos || ballerGamepad.getLeftY() != 0) {
             linearMotion.setRunMode(Motor.RunMode.RawPower);
 
-            boundsToggle.readValue();
-            if (!boundsToggle.getState()) {
+            if (!boundsToggle.isDown()) {
                 // Bounds logic
                 double lmPos = linearMotion.getPositions().get(0);
-                if ((ballerGamepad.getLeftY() > 0 && lmPos < linearMotionBoundMax - linearMotionBoundSafetyBorder) ||
+                if (/*(ballerGamepad.getLeftY() > 0 && lmPos < linearMotionBoundMax - linearMotionBoundSafetyBorder)*/ ballerGamepad.getLeftY() > 0 ||
                         (ballerGamepad.getLeftY() < 0 && lmPos > linearMotionBoundMin + linearMotionBoundSafetyBorder)) {
                     linearMotion.set(scaledJoystickDir());
+                    ballerGamepad.gamepad.stopRumble();
+                } else if(ballerGamepad.getLeftY() != 0) {
+                    linearMotion.set(0);
+                    ballerGamepad.gamepad.rumble(100);
                 } else {
                     linearMotion.set(0);
+                    ballerGamepad.gamepad.stopRumble();
                 }
             } else {
                 linearMotion.set(scaledJoystickDir());
+                ballerGamepad.gamepad.stopRumble();
             }
 
             linearMotionIsGoingToPos = false;
@@ -114,16 +122,14 @@ public class LinearMotionComponentV2 extends Component {
     }
 
     private void telemetry() {
+        telemetry.addLine();
         telemetry.addLine("Linear Motion Telemetry:");
         telemetry.addData("Linear motion pos", linearMotion.getPositions().get(0));
-        telemetry.addLine("Linear Motion Config:");
-        telemetry.addData("Bounds Toggle", "Dpad up");
-        telemetry.addData("Reset Encoder", "Dpad left");
     }
 
     private double scaledJoystickDir() {
         if (ballerGamepad.getLeftY() < 0) {
-            return ballerGamepad.getLeftY() / 4;
+            return ballerGamepad.getLeftY() / 2;
         } else {
             return ballerGamepad.getLeftY();
         }

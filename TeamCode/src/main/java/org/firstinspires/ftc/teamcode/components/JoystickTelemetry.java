@@ -11,6 +11,7 @@ public class JoystickTelemetry extends Component {
 
     @Override
     public void runLoop() {
+        telemetry.addLine();
         telemetry.addLine("Driver Joystick:");
         telemetry.addData("Left X", driverGamepad.getLeftX());
         telemetry.addData("Left Y", driverGamepad.getLeftY());
