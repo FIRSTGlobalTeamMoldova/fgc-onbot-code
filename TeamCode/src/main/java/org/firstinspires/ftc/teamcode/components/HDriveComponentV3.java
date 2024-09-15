@@ -1,25 +1,27 @@
 package org.firstinspires.ftc.teamcode.components;
 
-import com.arcrobotics.ftclib.controller.PController;
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
-import com.arcrobotics.ftclib.hardware.GyroEx;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.utilities.Component;
 import org.firstinspires.ftc.teamcode.utilities.RobotGyro;
 
+@Config
 public class HDriveComponentV3 extends Component {
+    public static double p, i, d;
+
     private DrivingBase drivingBase;
 
     private ButtonReader hDriveToggle;
     private ButtonReader slowModeToggle;
-    private ToggleButtonReader useTriggersToggle;
+    private ToggleButtonReader useGyro;
 
-    private PController rotationController = new PController(0.01);
+    private PIDController rotationController = new PIDController(0.01, 0.02, 0.003);
     private double currentOrientation = 0;
 
     private RobotGyro imu;
@@ -28,7 +30,7 @@ public class HDriveComponentV3 extends Component {
     public void initializeComponent() {
         hDriveToggle = new ButtonReader(driverGamepad, GamepadKeys.Button.RIGHT_BUMPER);
         slowModeToggle = new ButtonReader(driverGamepad, GamepadKeys.Button.LEFT_BUMPER);
-        useTriggersToggle = new ToggleButtonReader(driverGamepad, GamepadKeys.Button.DPAD_UP);
+        useGyro = new ToggleButtonReader(driverGamepad, GamepadKeys.Button.DPAD_UP);
 
         drivingBase = new DrivingBase(hardwareMap);
 
@@ -50,19 +52,21 @@ public class HDriveComponentV3 extends Component {
 
     @Override
     public void runLoop() {
+        //rotationController.setPID(p, i, d);
+        useGyro.readValue();
         if (hDriveToggle.isDown()) {
-            useTriggersToggle.readValue();
-
             double leftTrigger = driverGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
             double rightTrigger = driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
 
-            if (!useTriggersToggle.getState() && (leftTrigger > 0.1 || rightTrigger > 0.1)) {
+            if (leftTrigger > 0.1 || rightTrigger > 0.1) {
                 drivingBase.hDrive.set(Math.pow(rightTrigger - leftTrigger, 2) * Math.signum(rightTrigger - leftTrigger));
 
-                rotationController.setSetPoint(0);
-                double vel = rotationController.calculate(getDegreesToTarget(currentOrientation, imu.getRelativeHeading()));
+                if (!useGyro.getState()) {
+                    rotationController.setSetPoint(0);
+                    double vel = rotationController.calculate(getDegreesToTarget(currentOrientation, imu.getRelativeHeading()));
 
-                drivingBase.tankWheels.tankDrive(-vel, vel);
+                    drivingBase.tankWheels.tankDrive(-vel, vel);
+                }
             } else {
                 arcadeDrive();
                 currentOrientation = imu.getRelativeHeading();
@@ -79,6 +83,8 @@ public class HDriveComponentV3 extends Component {
             drivingBase.setServos(false);
         }
 
+        telemetry.addData("heading", imu.getRelativeHeading());
+        telemetry.addData("orientation", currentOrientation);
     }
 
     private void arcadeDrive() {

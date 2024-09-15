@@ -15,6 +15,6 @@ public class RobotConstants {
     public static final String FLAPS_RIGHT = "flaps right";
 
     public static final int DRIVE_CPR = 28 * 15;
-    public static final int HDRIVE_CPR = 28 * 9;
+    public static final int HDRIVE_CPR = 28 * 12;
     public static final int HDHEX_RPM = 6000;
 }
