@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.utilities;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -34,8 +31,6 @@ public abstract class ComponentOpMode extends LinearOpMode {
         GamepadEx driverGamepad = new GamepadEx(gamepad1);
         GamepadEx ballerGamepad = new GamepadEx(gamepad2);
 
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         ComponentConfig config = new ComponentConfig(hardwareMap, driverGamepad, ballerGamepad, telemetry, this);
 
         for (Component component : components) {

@@ -44,11 +44,11 @@ public class LinearMotionComponentV2 extends Component {
     public void initializeComponent() {
         motionLeader = new GravityGainMotor(hardwareMap, RobotConstants.LINEAR_LEFT);
         Motor follower = new Motor(hardwareMap, RobotConstants.LINEAR_RIGHT);
-        follower.setInverted(true);
 
         linearMotion = new MotorGroup(motionLeader, follower);
         linearMotion.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         linearMotion.setPositionTolerance(10);
+        linearMotion.setInverted(true);
         linearMotion.resetEncoder();
         linearMotion.stopMotor();
 

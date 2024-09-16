@@ -37,7 +37,7 @@ public class FlapsComponentV1 extends Component {
             rightServo.setPosition(1);
         } else {
             leftServo.setPosition(0.55);
-            rightServo.setPosition(0.625);
+            rightServo.setPosition(0.65);
         }
     }
 }
