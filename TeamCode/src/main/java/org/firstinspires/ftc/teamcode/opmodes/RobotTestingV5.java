@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.components.BaseVelocityTelemetry;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.components.LinearMotionComponentV2;
 import org.firstinspires.ftc.teamcode.utilities.ComponentOpMode;
 
 @TeleOp(name = "Main")
+@Disabled
 public class RobotTestingV5 extends ComponentOpMode {
     @Override
     public void componentsSetup() {

@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.components.JoystickTelemetry;
 import org.firstinspires.ftc.teamcode.components.LinearMotionComponentV2;
 import org.firstinspires.ftc.teamcode.utilities.ComponentOpMode;
 
-@TeleOp(name = "Experimental Gyro")
+@TeleOp(name = "Reliable")
 public class RobotTestingV6 extends ComponentOpMode {
     @Override
     public void componentsSetup() {

@@ -24,7 +24,7 @@ public abstract class ComponentOpMode extends LinearOpMode {
                     component.runLoop();
                 }
 
-                sleep(20);
+                //sleep(20);
                 telemetry.update();
             }
         }

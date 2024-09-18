@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.teamcode.utilities.Component;
 import org.firstinspires.ftc.teamcode.utilities.RobotGyro;
 
-@Config
+//@Config
 public class HDriveComponentV3 extends Component {
     public static double p, i, d;
 
@@ -54,6 +54,7 @@ public class HDriveComponentV3 extends Component {
     public void runLoop() {
         //rotationController.setPID(p, i, d);
         useGyro.readValue();
+        boolean gyroState = useGyro.getState();
         if (hDriveToggle.isDown()) {
             double leftTrigger = driverGamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
             double rightTrigger = driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
@@ -61,11 +62,13 @@ public class HDriveComponentV3 extends Component {
             if (leftTrigger > 0.1 || rightTrigger > 0.1) {
                 drivingBase.hDrive.set(Math.pow(rightTrigger - leftTrigger, 2) * Math.signum(rightTrigger - leftTrigger));
 
-                if (!useGyro.getState()) {
+                if (!gyroState) {
                     rotationController.setSetPoint(0);
                     double vel = rotationController.calculate(getDegreesToTarget(currentOrientation, imu.getRelativeHeading()));
 
                     drivingBase.tankWheels.tankDrive(-vel, vel);
+                } else {
+                    drivingBase.tankWheels.stop();
                 }
             } else {
                 arcadeDrive();
@@ -83,8 +86,10 @@ public class HDriveComponentV3 extends Component {
             drivingBase.setServos(false);
         }
 
-        telemetry.addData("heading", imu.getRelativeHeading());
-        telemetry.addData("orientation", currentOrientation);
+        telemetry.addLine();
+        telemetry.addLine("HDrive Telemetry:");
+        telemetry.addData("Heading", imu.getRelativeHeading());
+        telemetry.addData("Orientation", currentOrientation);
     }
 
     private void arcadeDrive() {
