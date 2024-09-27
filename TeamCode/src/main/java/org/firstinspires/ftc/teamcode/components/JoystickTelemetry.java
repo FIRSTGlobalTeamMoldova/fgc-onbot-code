@@ -15,8 +15,8 @@ public class JoystickTelemetry extends Component {
         telemetry.addLine("Driver Joystick:");
         telemetry.addData("Left X", driverGamepad.getLeftX());
         telemetry.addData("Left Y", driverGamepad.getLeftY());
-        telemetry.addData("Right X", driverGamepad.getLeftX());
-        telemetry.addData("Right Y", driverGamepad.getLeftY());
+        telemetry.addData("Right X", driverGamepad.getRightX());
+        telemetry.addData("Right Y", driverGamepad.getRightY());
         telemetry.addLine("Baller Joystick:");
         telemetry.addData("Left X", ballerGamepad.getLeftX());
         telemetry.addData("Left Y", ballerGamepad.getLeftY());

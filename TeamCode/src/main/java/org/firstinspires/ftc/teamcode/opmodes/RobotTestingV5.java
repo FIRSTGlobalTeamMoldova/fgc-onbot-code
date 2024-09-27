@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.components.JoystickTelemetry;
 import org.firstinspires.ftc.teamcode.components.LinearMotionComponentV2;
 import org.firstinspires.ftc.teamcode.utilities.ComponentOpMode;
 
-@TeleOp(name = "Main")
+@TeleOp
 @Disabled
 public class RobotTestingV5 extends ComponentOpMode {
     @Override
